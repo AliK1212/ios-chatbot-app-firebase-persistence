@@ -61,14 +61,23 @@ if (platform === 'ios') {
       // Create Podfile.properties.json
       const podfilePropertiesPath = path.join(iosDir, 'Podfile.properties.json');
       const podfileProperties = {
-        'ios.deploymentTarget': '13.0',
+        'ios.deploymentTarget': '15.1', 
         'useModularHeaders': true
       };
       fs.writeFileSync(
         podfilePropertiesPath, 
         JSON.stringify(podfileProperties, null, 2)
       );
-      console.log(' Created Podfile.properties.json with useModularHeaders: true');
+      console.log(' Created Podfile.properties.json with useModularHeaders: true and deploymentTarget: 15.1');
+    }
+    
+    // Update CocoaPods repositories
+    try {
+      console.log(' Updating CocoaPods repositories...');
+      require('../scripts/update-cocoapods-repos');
+      console.log(' CocoaPods repositories updated');
+    } catch (error) {
+      console.error(' Error updating CocoaPods repositories:', error);
     }
     
     // Run the fix-firebase-pods script

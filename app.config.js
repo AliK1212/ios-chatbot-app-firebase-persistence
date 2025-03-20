@@ -72,6 +72,14 @@ export default {
           iCloudContainerEnvironment: "Production"
         }
       ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "15.1"
+          }
+        }
+      ],
       "./plugins/with-pod-config.js"
     ],
     experiments: {
