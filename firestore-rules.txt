@@ -1,0 +1,68 @@
+// Firestore Rules
+// Copy these rules to your Firebase Console > Firestore Database > Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // For development purposes, allow read/write access to all collections
+    // In production, you should restrict this to specific collections and user roles
+    match /{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // The rules below are more restrictive and should be used in production
+    // Uncomment them when you're ready to deploy to production
+    
+    /*
+    // User profiles - users can only read/write their own data
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+    
+    // Chat sessions - users can only access their own chat sessions
+    match /chats/{sessionId} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == resource.data.userId;
+    }
+    
+    // Messages - users can only access messages from their sessions
+    match /messages/{messageId} {
+      allow read, write: if request.auth != null && 
+                           exists(/databases/$(database)/documents/chats/$(resource.data.sessionId)) &&
+                           get(/databases/$(database)/documents/chats/$(resource.data.sessionId)).data.userId == request.auth.uid;
+    }
+    
+    // PDF Documents - allow read access for all users
+    match /pdf_documents/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // PDF Chunks - allow read access for all users
+    match /pdf_chunks/{chunkId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Documents - allow read access for all users
+    match /documents/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Chunks - allow read access for all users
+    match /chunks/{chunkId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Token usage - only allow write
+    match /token_usage/{usageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    */
+  }
+}

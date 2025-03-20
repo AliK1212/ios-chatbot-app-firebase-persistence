@@ -1,0 +1,83 @@
+# Firebase Storage CORS Configuration Setup
+
+This document explains how to set up CORS (Cross-Origin Resource Sharing) for Firebase Storage, which is necessary for the PDF processing functionality to work correctly.
+
+## Prerequisites
+
+1. Install the Firebase CLI:
+   ```
+   npm install -g firebase-tools
+   ```
+
+2. Install the Google Cloud SDK:
+   - Windows: https://cloud.google.com/sdk/docs/install#windows
+   - macOS: https://cloud.google.com/sdk/docs/install#mac
+   - Linux: https://cloud.google.com/sdk/docs/install#linux
+
+## Deployment Steps
+
+1. Login to Firebase:
+   ```
+   firebase login
+   ```
+
+2. Make sure you have the correct project selected:
+   ```
+   firebase use safehmo-demo
+   ```
+
+3. Run the deployment script:
+   ```
+   node scripts/deploy-storage-config.js
+   ```
+
+This script will:
+- Deploy the Firebase Storage rules from `firebase/storage.rules`
+- Deploy the CORS configuration from `cors.json`
+
+## Manual CORS Configuration
+
+If you need to manually configure CORS:
+
+1. Create a `cors.json` file with the following content:
+   ```json
+   {
+     "origin": ["*"],
+     "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+     "maxAgeSeconds": 3600,
+     "responseHeader": ["Content-Type", "Content-Disposition", "Content-Length"]
+   }
+   ```
+
+2. Deploy the CORS configuration using gsutil:
+   ```
+   gsutil cors set cors.json gs://safehmo-demo.firebasestorage.app
+   ```
+
+## Troubleshooting
+
+If you encounter CORS errors when accessing PDFs:
+
+1. Check that the CORS configuration has been deployed correctly:
+   ```
+   gsutil cors get gs://safehmo-demo.firebasestorage.app
+   ```
+
+2. Ensure your Firebase Storage rules allow public read access for testing:
+   ```
+   service firebase.storage {
+     match /b/{bucket}/o {
+       match /{allPaths=**} {
+         allow read;
+         allow write: if request.auth != null;
+       }
+     }
+   }
+   ```
+
+3. Test CORS access using the ProcessPdfsModal's "Test Storage Access" button.
+
+## References
+
+- [Firebase Storage CORS Documentation](https://firebase.google.com/docs/storage/web/download-files#cors_configuration)
+- [Google Cloud Storage CORS Documentation](https://cloud.google.com/storage/docs/cross-origin)
