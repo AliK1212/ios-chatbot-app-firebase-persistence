@@ -1,7 +1,7 @@
 // Import Buffer polyfill for browser and React Native environments
 import './buffer-polyfill';
 
-import OpenAI from 'openai';
+import { openai } from './openai-config';
 import { OPENAI_CONFIG } from '../firebase/config';
 import Constants from 'expo-constants';
 
@@ -14,32 +14,8 @@ console.log(`[embedding-service] Running in ${isReactNative ? 'React Native' : i
 console.log(`[embedding-service] Buffer available: ${typeof Buffer !== 'undefined'}`);
 console.log(`[embedding-service] Buffer.byteLength available: ${typeof Buffer.byteLength === 'function'}`);
 
-// Initialize OpenAI with API key from config
-let openai: OpenAI | null = null;
-try {
-  // Check if API key is valid - try to get from Expo Constants first, then config, then env
-  let apiKey = OPENAI_CONFIG.API_KEY;
-  
-  // Try to get from Expo Constants if available
-  if (Constants && Constants.expoConfig && Constants.expoConfig.extra && Constants.expoConfig.extra.openai) {
-    apiKey = Constants.expoConfig.extra.openai.apiKey || apiKey;
-    console.log('[embedding-service] Using API key from Expo Constants');
-  }
-  
-  if (!apiKey || apiKey === 'your-openai-api-key-here') {
-    console.error('[embedding-service] OpenAI API key is missing or invalid. Please set a valid API key in app.config.js or config.ts');
-    openai = null;
-  } else {
-    openai = new OpenAI({
-      apiKey: apiKey,
-      dangerouslyAllowBrowser: true // Allow usage in browser environments
-    });
-    console.log(`[embedding-service] OpenAI API configured successfully`);
-  }
-} catch (error) {
-  console.error('[embedding-service] Failed to initialize OpenAI client:', error);
-  openai = null;
-}
+// Use the pre-configured OpenAI instance from openai-config.ts
+let openaiInstance = openai;
 
 /**
  * Generate embedding for text using OpenAI API
@@ -49,7 +25,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     console.log(`[embedding-service] Generating embedding for text of length ${text.length}`);
     
     // Check if OpenAI is configured
-    if (!openai || (!OPENAI_CONFIG.API_KEY && !process.env.OPENAI_API_KEY) || 
+    if (!openaiInstance || (!OPENAI_CONFIG.API_KEY && !process.env.OPENAI_API_KEY) || 
         OPENAI_CONFIG.API_KEY === 'your-openai-api-key-here') {
       console.warn('[embedding-service] OpenAI API key not configured or client initialization failed, using fallback embedding generation');
       return generateFallbackEmbedding(text);
@@ -77,11 +53,11 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       try {
         console.log(`[embedding-service] Calling OpenAI API to generate embedding (attempt ${retries + 1}/${maxRetries})`);
         
-        if (!openai) {
+        if (!openaiInstance) {
           throw new Error('OpenAI client not initialized');
         }
         
-        const response = await openai.embeddings.create({
+        const response = await openaiInstance.embeddings.create({
           model: OPENAI_CONFIG.EMBEDDING_MODEL || "text-embedding-ada-002",
           input: truncatedText.trim(),
           encoding_format: "float"

@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.9.1"
+    "version": ">= 5.9.1",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -21,27 +22,40 @@
     },
     "production": {
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "OPENAI_API_KEY": "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",
+        "OPENAI_MODEL": "gpt-3.5-turbo",
+        "OPENAI_EMBEDDING_MODEL": "text-embedding-ada-002",
+        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true",
+        "FIREBASE_API_KEY": "AIzaSyCu1mQJesDxW3mMQvNWralKK69K362lPLk",
+        "FIREBASE_AUTH_DOMAIN": "safe-hmo-demo.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "safe-hmo-demo",
+        "FIREBASE_STORAGE_BUCKET": "safe-hmo-demo.firebasestorage.app",
+        "FIREBASE_MESSAGING_SENDER_ID": "462410251940",
+        "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
+        "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       },
+      "prebuildCommand": "npm run prebuild",
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "resourceClass": "m-medium",
-        "distribution": "store"
+        "distribution": "store",
+        "credentialsSource": "remote"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-  "appleId": "DalSidhu@be-insure.co.uk",
-  "appleTeamId": "RH96SQQ95V",
-  "ascApiKeyId": "NJRIQUX0BLNU",
-  "ascApiKeyIssuerId": "fbad1598-af8e-4049-841f-42e68bc1041d",
-  "ascApiKeyPath": "./AuthKey_NJRIQUX0BLNU.p8"
-}
+        "appleId": "DalSidhu@be-insure.co.uk",
+        "appleTeamId": "RH96SQQ95V",
+        "ascApiKeyId": "7DUAYVDCQH",
+        "ascApiKeyIssuerId": "fbad1598-af8e-4049-841f-42e68bc1041d",
+        "ascApiKeyPath": "./AuthKey_7DUAYVDCQH.p8"
+      }
     }
   }
 }

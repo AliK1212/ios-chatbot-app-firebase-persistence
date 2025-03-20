@@ -1,5 +1,5 @@
 import { getFirestore, collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
-import { OpenAI } from 'openai';
+import { openai } from './openai-config';
 import { cosineSimilarity } from './vector-utils';
 import { generateEmbedding } from './embedding-service';
 import { OPENAI_CONFIG } from '../firebase/config';
@@ -8,11 +8,8 @@ import { OPENAI_CONFIG } from '../firebase/config';
 const REASONING_MODEL = process.env.REASONING_MODEL || 'gpt-3.5-turbo';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'text-embedding-ada-002';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: OPENAI_CONFIG.API_KEY,
-  dangerouslyAllowBrowser: true // Allow usage in browser environments
-});
+// Use the pre-configured OpenAI instance from openai-config.ts
+const openaiInstance = openai;
 
 // Constants
 const MAX_CHUNKS_PER_DOC = 3;
@@ -237,7 +234,7 @@ If information is missing or contradictory, acknowledge this in your response.
     console.log(`[reasoning-layer] Created reasoning prompt`);
     
     // Generate a response using the language model
-    const response = await openai.chat.completions.create({
+    const response = await openaiInstance.chat.completions.create({
       model: REASONING_MODEL,
       messages: [
         { 
@@ -489,10 +486,7 @@ async function processQueryWithContext(
     }
     
     // For short questions or obvious follow-ups, use the API to process
-    const openai = new OpenAI({
-      apiKey: OPENAI_CONFIG.API_KEY,
-      dangerouslyAllowBrowser: true
-    });
+    const openai = openaiInstance;
     
     // Use only the last few exchanges to keep context manageable
     const recentConversation = conversationHistory.slice(-4); // Reduced from 6 to 4
@@ -625,7 +619,7 @@ User's Question: ${query}
       console.log(`[reasoning-layer] Created prompt for no documents`);
       
       // Generate a response using the language model
-      const response = await openai.chat.completions.create({
+      const response = await openaiInstance.chat.completions.create({
         model: REASONING_MODEL,
         messages: [
           { 
@@ -722,7 +716,7 @@ Please provide a BRIEF answer to the user's question (2-6 sentences maximum). Do
     console.log(`[reasoning-layer] Created reasoning prompt`);
     
     // Generate a response using the language model
-    const response = await openai.chat.completions.create({
+    const response = await openaiInstance.chat.completions.create({
       model: REASONING_MODEL,
       messages: [
         { 

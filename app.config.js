@@ -1,15 +1,19 @@
+// Define the entire configuration in app.config.js
+// No need to import from app.json anymore
 export default {
   expo: {
     name: "Safe HMO",
     slug: "safe-hmo",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/safe-logo.png",
+    icon: "./assets/images/square/app-icon.png", // Using favicon as a temporary square icon
     userInterfaceStyle: "light",
+    scheme: "safehmo",
+    newArchEnabled: true,
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/images/safe-logo-.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#0B4E83"
     },
     assetBundlePatterns: [
       "**/*"
@@ -17,30 +21,51 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.safehmo.app",
-      buildNumber: "1",
       infoPlist: {
-        NSCameraUsageDescription: "This app needs access to the camera to scan documents.",
-        NSPhotoLibraryUsageDescription: "This app needs access to photos for uploading HMO documents.",
-        NSPhotoLibraryAddUsageDescription: "This app needs access to photos to save documents."
-      }
+        NSCameraUsageDescription: "This app uses the camera to scan documents and allow users to take profile pictures.",
+        NSPhotoLibraryUsageDescription: "This app uses the photo library to allow users to select documents and profile pictures.",
+        NSPhotoLibraryAddUsageDescription: "This app needs access to save documents to your photo library.",
+        NSDocumentsFolderUsageDescription: "This app needs access to your documents folder to select PDF files.",
+        UIBackgroundModes: ["fetch", "remote-notification"],
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true
+        },
+        ITSAppUsesNonExemptEncryption: false
+      },
+      associatedDomains: ["applinks:safehmo.com"]
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        foregroundImage: "./assets/images/square/app-icon.png", 
+        backgroundColor: "#0B4E83"
       },
       package: "com.safehmo.app",
-      versionCode: 1,
       permissions: [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ],
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [
+            {
+              scheme: "https",
+              host: "safehmo.com",
+              pathPrefix: "/"
+            }
+          ],
+          category: ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
-    web: {
-      favicon: "./assets/favicon.png"
-    },
     plugins: [
+      "expo-router",
       [
         "expo-document-picker",
         {
@@ -48,12 +73,27 @@ export default {
         }
       ]
     ],
+    experiments: {
+      typedRoutes: true
+    },
     extra: {
+      router: {
+        origin: false
+      },
       eas: {
-        // projectId will be set by EAS init
+        projectId: "99f6a3ab-5cf1-4f73-83fd-597088cbaf16"
       },
       openai: {
-        apiKey: "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" // Replace with your actual OpenAI API key
+        apiKey: process.env.OPENAI_API_KEY || ""
+      },
+      firebase: {
+        apiKey: process.env.FIREBASE_API_KEY || "",
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN || "",
+        projectId: process.env.FIREBASE_PROJECT_ID || "",
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "",
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
+        appId: process.env.FIREBASE_APP_ID || "",
+        measurementId: process.env.FIREBASE_MEASUREMENT_ID || ""
       }
     }
   }

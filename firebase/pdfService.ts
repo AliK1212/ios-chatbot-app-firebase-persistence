@@ -37,7 +37,7 @@ import {
 } from 'firebase/storage';
 import { processDocumentCompat } from '../utils/document-processor';
 import { generateEmbedding } from '../utils/embedding-service';
-import OpenAI from 'openai';
+import { openai } from '../utils/openai-config';
 import { 
   ChatCompletionSystemMessageParam, 
   ChatCompletionUserMessageParam,
@@ -52,19 +52,8 @@ import { cosineSimilarity, verifyDocumentRelevance } from '../utils/vector-utils
 import Constants from 'expo-constants';
 import { calculateTokens, calculateTokenUsage } from '../utils/token-counter';
 
-// Initialize OpenAI with API key
-let apiKey = OPENAI_CONFIG.API_KEY;
-
-// Try to get from Expo Constants if available
-if (Constants && Constants.expoConfig && Constants.expoConfig.extra && Constants.expoConfig.extra.openai) {
-  apiKey = Constants.expoConfig.extra.openai.apiKey || apiKey;
-  console.log('[pdfService] Using API key from Expo Constants');
-}
-
-const openai = new OpenAI({
-  apiKey,
-  dangerouslyAllowBrowser: true // Allow usage in browser environments
-});
+// Use the pre-configured OpenAI instance from openai-config.ts
+const openaiInstance = openai;
 
 // Get Firestore instance
 const db = getFirestore();
@@ -954,14 +943,17 @@ ${contextContent}`
     };
     
     // Generate response using OpenAI
-    const response = await openai.chat.completions.create({
+    const chatOpenAI = openaiInstance;
+    
+    // Generate a response using the OpenAI API
+    const completion = await chatOpenAI.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [systemMessage, userMessage] as Array<ChatCompletionMessageParam>,
       temperature: 0.3,
       max_tokens: 150
     });
     
-    const responseText = response.choices[0]?.message?.content || 'Sorry, I was unable to generate a response.';
+    const responseText = completion.choices[0]?.message?.content || 'Sorry, I was unable to generate a response.';
     
     // Save the response
     await saveMessage(sessionId, 'assistant', responseText);
@@ -1219,13 +1211,10 @@ export const generateChatResponseFromAllDocs = async (
     }
     
     // Configure the OpenAI client
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || OPENAI_CONFIG.API_KEY,
-      dangerouslyAllowBrowser: true // Allow usage in browser environments
-    });
+    const chatOpenAI = openaiInstance;
     
     // Generate a response using the OpenAI API
-    const completion = await openai.chat.completions.create({
+    const completion = await chatOpenAI.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages,
       temperature: 0.7,
