@@ -42,8 +42,7 @@
       "ios": {
         "resourceClass": "m-medium",
         "distribution": "store",
-        "credentialsSource": "remote",
-        "prebuildCommand": "echo 'use_modular_headers!' > ./ios/Podfile.modular && cat ./ios/Podfile >> ./ios/Podfile.modular && mv ./ios/Podfile.modular ./ios/Podfile"
+        "credentialsSource": "remote"
       }
     }
   },
