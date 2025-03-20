@@ -42,7 +42,8 @@
       "ios": {
         "resourceClass": "m-medium",
         "distribution": "store",
-        "credentialsSource": "remote"
+        "credentialsSource": "remote",
+        "prebuildCommand": "npm run prepare:eas-build"
       }
     }
   },

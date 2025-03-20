@@ -73,9 +73,17 @@ if (platform === 'ios') {
     
     // Update CocoaPods repositories
     try {
+      console.log(' Cleaning CocoaPods cache...');
+      require('../scripts/clean-cocoapods-cache');
+      console.log(' CocoaPods cache cleaned');
+      
       console.log(' Updating CocoaPods repositories...');
       require('../scripts/update-cocoapods-repos');
       console.log(' CocoaPods repositories updated');
+      
+      console.log(' Adding missing React Native dependencies...');
+      require('../scripts/add-missing-pods');
+      console.log(' Missing React Native dependencies added');
     } catch (error) {
       console.error(' Error updating CocoaPods repositories:', error);
     }
