@@ -3,15 +3,22 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Animated,
-  StatusBar,
   Dimensions,
+  KeyboardAvoidingView
 } from 'react-native';
+import { Image } from 'expo-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming,
+  withSequence,
+  withDelay
+} from 'react-native-reanimated';
 import { Link } from 'expo-router';
 import { signInWithEmailAndPassword, Auth } from 'firebase/auth';
 import { auth } from '../../firebase/config';
@@ -26,8 +33,12 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const fadeAnim = useState(new Animated.Value(0))[0];
-  const slideAnim = useState(new Animated.Value(50))[0];
+  
+  // Create animated values using Reanimated 2
+  const fadeAnim = useSharedValue(0);
+  const slideAnim = useSharedValue(50);
+  
+  // Get dimensions using Dimensions API
   const windowHeight = Dimensions.get('window').height;
   const windowWidth = Dimensions.get('window').width;
   
@@ -36,19 +47,23 @@ export default function LoginScreen() {
   const containerWidth = isTablet ? '60%' : '100%';
   const logoSize = isTablet ? 200 : 300;
 
+  // Define animated styles
+  const fadeStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeAnim.value
+    };
+  });
+
+  const slideStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: slideAnim.value }]
+    };
+  });
+
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      })
-    ]).start();
+    // Start animations when component mounts
+    fadeAnim.value = withTiming(1, { duration: 1000 });
+    slideAnim.value = withTiming(0, { duration: 800 });
   }, []);
 
   const handleLogin = async () => {
@@ -84,7 +99,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar style="dark" />
       <LinearGradient
         colors={['#FFF8E1', '#FFFFFF']}
         style={{ flex: 1, width: '100%' }}
@@ -100,10 +115,8 @@ export default function LoginScreen() {
             <Animated.View 
               style={[
                 styles.logoSection, 
-                { 
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }] 
-                }
+                fadeStyle, 
+                slideStyle
               ]}
             >
               <LinearGradient
@@ -121,12 +134,9 @@ export default function LoginScreen() {
             <Animated.View 
               style={[
                 styles.formContainer, 
-                { 
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }],
-                  width: isTablet ? '80%' : '100%',
-                  alignSelf: 'center'
-                }
+                fadeStyle, 
+                slideStyle,
+                { width: isTablet ? '80%' : '100%', alignSelf: 'center' }
               ]}
             >
               <Text style={styles.formTitle}>Welcome Back</Text>

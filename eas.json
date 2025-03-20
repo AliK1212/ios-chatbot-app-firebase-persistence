@@ -35,7 +35,6 @@
         "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
         "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       },
-      "prebuildCommand": "npm run prebuild",
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
@@ -43,7 +42,8 @@
       "ios": {
         "resourceClass": "m-medium",
         "distribution": "store",
-        "credentialsSource": "remote"
+        "credentialsSource": "remote",
+        "prebuildCommand": "echo 'use_modular_headers!' > ./ios/Podfile.modular && cat ./ios/Podfile >> ./ios/Podfile.modular && mv ./ios/Podfile.modular ./ios/Podfile"
       }
     }
   },

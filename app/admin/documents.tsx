@@ -235,7 +235,7 @@ export default function DocumentManagement() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Button 
-            icon={({ size, color }) => <ArrowLeft size={size} color={color} />}
+            icon={({ size, color }: { size: number, color: string }) => <ArrowLeft size={size} color={color} />}
             onPress={() => router.back()}
             style={styles.backButton}
           >
@@ -292,7 +292,7 @@ export default function DocumentManagement() {
                     </DataTable.Cell>
                     <DataTable.Cell numeric>
                       <Button
-                        icon={({ size, color }) => <Trash2 size={size} color={color} />}
+                        icon={({ size, color }: { size: number, color: string }) => <Trash2 size={size} color={color} />}
                         onPress={() => deleteDocument(doc.id, doc.fileUrl)}
                         mode="text"
                         textColor="red"
@@ -309,7 +309,7 @@ export default function DocumentManagement() {
       </ScrollView>
       
       <FAB
-        icon={({ size, color }) => <Plus size={size} color={color} />}
+        icon={({ size, color }: { size: number, color: string }) => <Plus size={size} color={color} />}
         style={styles.fab}
         onPress={pickDocument}
         disabled={uploading || processingDoc}

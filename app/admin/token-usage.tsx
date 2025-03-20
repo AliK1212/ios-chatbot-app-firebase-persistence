@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Dimensions } from 'react-native';
 import { collection, query, orderBy, limit, getDocs, getFirestore, doc, getDoc, where } from 'firebase/firestore';
 import { useUser } from '../../context/UserContext';
 import { useRouter } from 'expo-router';
@@ -9,6 +9,9 @@ import { BarChart, PieChart } from 'react-native-chart-kit';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+
+// Mock Dimensions API if it's not available
+const windowWidth = Dimensions.get ? Dimensions.get('window').width : 375;
 
 type TokenUsage = {
   id: string;
@@ -476,7 +479,7 @@ export default function TokenUsageDashboard() {
                   <Card.Content>
                     <BarChart
                       data={chartData}
-                      width={Dimensions.get('window').width - 40}
+                      width={windowWidth - 40}
                       height={220}
                       yAxisLabel=""
                       yAxisSuffix=""
@@ -510,7 +513,7 @@ export default function TokenUsageDashboard() {
                   <Card.Content>
                     <PieChart
                       data={pieChartData}
-                      width={Dimensions.get('window').width - 40}
+                      width={windowWidth - 40}
                       height={220}
                       chartConfig={{
                         backgroundColor: Colors.background,

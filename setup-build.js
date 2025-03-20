@@ -12,6 +12,16 @@ const { execSync } = require('child_process');
 // Log start of setup
 console.log('Setting up build environment...');
 
+// Detect platform from EAS_BUILD_PLATFORM environment variable
+// This is automatically set by EAS Build
+const platform = process.env.EAS_BUILD_PLATFORM || null;
+
+if (platform) {
+  console.log(`Platform: ${platform}`);
+} else {
+  console.log('No platform detected, continuing with general setup');
+}
+
 // Run the OpenAI browser fix script
 try {
   console.log('Fixing OpenAI browser compatibility...');

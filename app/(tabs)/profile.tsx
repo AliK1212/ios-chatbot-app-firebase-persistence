@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Switch, ScrollView, Alert, Modal } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { User, Settings, CreditCard, LogOut, ChevronRight, Bell, Shield, HelpCircle, Star, FileText, MessageSquare } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useUser } from '../../context/UserContext';
@@ -11,6 +12,49 @@ import ProcessPdfsModal from '../../components/ui/ProcessPdfsModal';
 import PersonalInfoForm from '../../components/profile/PersonalInfoForm';
 import { Colors } from '../../constants/Colors';
 import { getUserTokenUsage } from '../../firebase/pdfService';
+
+// Mock components that are no longer available in React Native
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const Switch: React.FC<{
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+  trackColor?: { false: string; true: string };
+  thumbColor?: string;
+}> = ({ value, onValueChange, trackColor, thumbColor }) => (
+  <TouchableOpacity 
+    onPress={() => onValueChange(!value)}
+    style={{
+      width: 50,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: value ? (trackColor?.true || '#4CD964') : (trackColor?.false || '#D1D1D6'),
+      justifyContent: 'center',
+      padding: 5
+    }}
+  >
+    <View style={{
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: thumbColor || '#FFFFFF',
+      alignSelf: value ? 'flex-end' : 'flex-start'
+    }} />
+  </TouchableOpacity>
+);
+
+const Modal: React.FC<{
+  visible: boolean;
+  onRequestClose?: () => void;
+  transparent?: boolean;
+  animationType?: string;
+  children: React.ReactNode;
+}> = ({ visible, onRequestClose, transparent, animationType, children }) => (
+  visible ? <View style={[
+    StyleSheet.absoluteFill, 
+    { backgroundColor: transparent ? 'transparent' : 'white' }
+  ]}>{children}</View> : null
+);
 
 // Token limit for free users
 const FREE_TOKEN_LIMIT = 50000;
@@ -72,6 +116,7 @@ export default function ProfileScreen() {
         [
           {
             text: 'Cancel',
+            // @ts-ignore
             style: 'cancel',
           },
           {
@@ -89,6 +134,7 @@ export default function ProfileScreen() {
         [
           {
             text: 'Not Now',
+            // @ts-ignore
             style: 'cancel',
           },
           {

@@ -1,29 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  Platform, 
-  KeyboardAvoidingView, 
-  StatusBar, 
-  Image,
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  ScrollView,
   FlatList,
-  Modal,
   ActivityIndicator,
-  Animated,
+  Modal,
+  KeyboardAvoidingView,
   Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming,
+  withSequence,
+  withDelay
+} from 'react-native-reanimated';
+import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import { createUserWithEmailAndPassword, Auth } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase/config';
 import { AuthInput } from '../../components/auth/AuthInput';
 import { AuthButton } from '../../components/auth/AuthButton';
-import { useUser } from '../../context/UserContext';
-import { Colors } from '../../constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useUser } from '../../context/UserContext';
+import CountryPicker from 'react-native-country-picker-modal';
+import { Country } from 'react-native-country-picker-modal';
+import { Colors } from '../../constants/Colors';
 
 // Create a typed reference to auth
 const authInstance: Auth = auth;
@@ -51,8 +60,12 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showCountryModal, setShowCountryModal] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
-  const slideAnim = useState(new Animated.Value(50))[0];
+  
+  // Create animated values using Reanimated 2
+  const fadeAnim = useSharedValue(0);
+  const slideAnim = useSharedValue(50);
+  
+  // Get dimensions using Dimensions API
   const windowHeight = Dimensions.get('window').height;
   const windowWidth = Dimensions.get('window').width;
   
@@ -63,19 +76,23 @@ export default function RegisterScreen() {
 
   const { register } = useUser();
 
+  // Define animated styles
+  const fadeStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeAnim.value
+    };
+  });
+
+  const slideStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: slideAnim.value }]
+    };
+  });
+
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      })
-    ]).start();
+    // Start animations when component mounts
+    fadeAnim.value = withTiming(1, { duration: 1000 });
+    slideAnim.value = withTiming(0, { duration: 800 });
   }, []);
 
   const validateEmail = (email: string) => {
@@ -196,7 +213,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar style="dark" />
       <LinearGradient
         colors={['#FFF8E1', '#FFFFFF']}
         style={{ flex: 1, width: '100%' }}
@@ -212,10 +229,8 @@ export default function RegisterScreen() {
             <Animated.View 
               style={[
                 styles.logoSection, 
-                { 
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }] 
-                }
+                fadeStyle,
+                slideStyle
               ]}
             >
               <LinearGradient
@@ -233,9 +248,9 @@ export default function RegisterScreen() {
             <Animated.View 
               style={[
                 styles.formContainer, 
+                fadeStyle,
+                slideStyle,
                 { 
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }],
                   width: isTablet ? '80%' : '100%',
                   alignSelf: 'center'
                 }

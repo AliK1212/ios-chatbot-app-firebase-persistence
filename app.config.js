@@ -71,7 +71,8 @@ export default {
         {
           iCloudContainerEnvironment: "Production"
         }
-      ]
+      ],
+      "./plugins/with-pod-config.js"
     ],
     experiments: {
       typedRoutes: true
@@ -94,6 +95,12 @@ export default {
         messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "",
         appId: process.env.FIREBASE_APP_ID || "",
         measurementId: process.env.FIREBASE_MEASUREMENT_ID || ""
+      }
+    },
+    hooks: {
+      prebuild: {
+        // This hook will run before the prebuild process
+        script: "./hooks/prebuild.js"
       }
     }
   }

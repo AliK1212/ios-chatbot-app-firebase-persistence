@@ -20,6 +20,7 @@ export type UserProfile = {
   mobile?: string;
   country?: string;
   isPremium: boolean;
+  isAdmin?: boolean;
   createdAt: string;
   updatedAt?: string;
   lastLoginAt: string;
