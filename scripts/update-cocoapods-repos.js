@@ -19,18 +19,20 @@ try {
     process.exit(0);
   }
 
-  // Simpler approach - just add the trunk repo
-  console.log('Setting up CocoaPods trunk repository...');
-  
+  // In EAS build environment, CocoaPods is already installed
+  // No need to check or install it
+
+  // Add the trunk repo if it doesn't exist
   try {
-    // Add the trunk repo
-    execSync('pod repo add trunk https://cdn.cocoapods.org/', { 
+    console.log('Setting up CocoaPods trunk repository...');
+    execSync('pod repo add trunk https://cdn.cocoapods.org/ || true', { 
       cwd: iosDir,
       stdio: 'inherit'
     });
-    console.log('Successfully added trunk repository');
+    console.log('Successfully set up trunk repository');
   } catch (error) {
     console.log('Trunk repository already exists or error adding it:', error.message);
+    // Continue execution even if this fails
   }
   
   // Update the repos

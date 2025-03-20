@@ -4,7 +4,8 @@ require File.join(File.dirname(`node --print "require.resolve('react-native/pack
 require 'json'
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
 
-# Add additional source repos for pods - only use trunk to avoid duplicate specs
+# Add additional source repos for pods
+source 'https://github.com/CocoaPods/Specs.git'
 source 'https://cdn.cocoapods.org/'
 
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
@@ -39,6 +40,9 @@ target 'SafeHMO' do
 
   # Explicitly add RCT-Folly with a compatible version
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
+  
+  # Explicitly add React-jsinspector
+  pod 'React-jsinspector', :path => '../node_modules/react-native/ReactCommon/jsinspector'
 
   # Set variables for Firebase and other libraries that need static frameworks
   $RNFirebaseAsStaticFramework = true

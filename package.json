@@ -15,6 +15,7 @@
     "prebuild:android": "set EAS_BUILD_PLATFORM=android && node setup-build.js && npx expo prebuild --platform android",
     "postinstall": "node scripts/fix-firebase-pods.js && node scripts/fix-script-permissions.js",
     "fix:pods": "node scripts/clean-cocoapods-cache.js && node scripts/update-cocoapods-repos.js",
+    "fix:pods:ios": "node scripts/fix-ios-pods.js",
     "fix:permissions": "node scripts/fix-script-permissions.js",
     "prepare:eas-build": "node scripts/prepare-eas-build.js",
     "doctor": "npx expo-doctor",
