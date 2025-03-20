@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * This script updates CocoaPods repositories to ensure all dependencies can be found
+ * This script updates CocoaPods repositories
  * It should be run during the prebuild process for iOS builds
  */
 
@@ -19,60 +19,29 @@ try {
     process.exit(0);
   }
 
-  // More aggressive approach to fix duplicate repositories
+  // Simpler approach - just add the trunk repo
+  console.log('Setting up CocoaPods trunk repository...');
+  
   try {
-    console.log('Removing all CocoaPods repositories and setting up only trunk...');
-    
-    // First, try to remove the cocoapods repo
-    try {
-      execSync('pod repo remove cocoapods', { 
-        cwd: iosDir,
-        stdio: 'inherit'
-      });
-      console.log('Successfully removed cocoapods repository');
-    } catch (error) {
-      console.log('No cocoapods repository found or error removing it:', error.message);
-    }
-    
-    // Then try to remove the trunk repo
-    try {
-      execSync('pod repo remove trunk', { 
-        cwd: iosDir,
-        stdio: 'inherit'
-      });
-      console.log('Successfully removed trunk repository');
-    } catch (error) {
-      console.log('No trunk repository found or error removing it:', error.message);
-    }
-    
-    // Add only the trunk repo
+    // Add the trunk repo
     execSync('pod repo add trunk https://cdn.cocoapods.org/', { 
       cwd: iosDir,
       stdio: 'inherit'
     });
     console.log('Successfully added trunk repository');
-    
-    // Clean the CocoaPods cache
-    execSync('pod cache clean --all', { 
-      cwd: iosDir,
-      stdio: 'inherit'
-    });
-    console.log('Successfully cleaned CocoaPods cache');
   } catch (error) {
-    console.error('Error setting up CocoaPods repositories:', error.message);
+    console.log('Trunk repository already exists or error adding it:', error.message);
   }
-
-  // Update CocoaPods repos
-  console.log('Running pod repo update...');
+  
+  // Update the repos
+  console.log('Updating CocoaPods repositories...');
   execSync('pod repo update', { 
     cwd: iosDir,
     stdio: 'inherit'
   });
-  console.log('CocoaPods repositories updated successfully');
-
-  // Create a .pod-repo-update file to indicate that repos have been updated
-  fs.writeFileSync(path.join(iosDir, '.pod-repo-update'), new Date().toISOString());
-  console.log('Created .pod-repo-update marker file');
+  console.log('Successfully updated CocoaPods repositories');
+  
+  console.log('CocoaPods repositories setup complete');
 } catch (error) {
   console.error('Error updating CocoaPods repositories:', error);
   process.exit(1);

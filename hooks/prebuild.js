@@ -80,10 +80,6 @@ if (platform === 'ios') {
       console.log(' Updating CocoaPods repositories...');
       require('../scripts/update-cocoapods-repos');
       console.log(' CocoaPods repositories updated');
-      
-      console.log(' Adding missing React Native dependencies...');
-      require('../scripts/add-missing-pods');
-      console.log(' Missing React Native dependencies added');
     } catch (error) {
       console.error(' Error updating CocoaPods repositories:', error);
     }

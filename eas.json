@@ -43,7 +43,7 @@
         "resourceClass": "m-medium",
         "distribution": "store",
         "credentialsSource": "remote",
-        "prebuildCommand": "npm run prepare:eas-build"
+        "prebuildCommand": "npm run fix:pods"
       }
     }
   },
