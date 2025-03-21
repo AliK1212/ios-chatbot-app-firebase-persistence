@@ -25,6 +25,10 @@ BUILD_INSTRUCTIONS.md
 .idea/
 *.log
 
+# Ignore native directories to force EAS to generate them during build
+/ios/
+/android/
+
 # Don't exclude these critical files that might be needed for the build
 !GoogleService-Info.plist
 !app.config.js

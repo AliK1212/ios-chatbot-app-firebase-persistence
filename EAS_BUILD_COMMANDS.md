@@ -1,75 +1,70 @@
 # EAS Build Commands
 
-This document provides the exact commands to run for different build scenarios.
+This document provides all the necessary commands to build your app with EAS.
 
 ## Prerequisites
 
-Make sure you're logged into EAS:
+Before starting, make sure you have:
 
-```bash
-npx eas login
-```
+1. Installed the EAS CLI: `npm install -g eas-cli`
+2. Logged in to your Expo account: `npx eas login`
+3. Configured your app in app.config.js
+4. Updated eas.json with your specific build configurations
 
-## iOS Simulator Build (Preview)
+## Running Common Build Commands
 
-For testing on iOS simulator (fastest way to test):
+### iOS Builds
+
+#### Development Build (for testing on simulator)
 
 ```bash
 npx eas build --profile preview --platform ios
 ```
 
-This will:
-- Build for iOS simulator
-- Use debug configuration
-- Automatically increment build number
-- Use environment variables from the preview profile
-
-## iOS App Store Build (Production)
-
-For submitting to App Store:
+#### Production Build (for App Store)
 
 ```bash
-npx eas build --profile production --platform ios
+npx eas build --platform ios --profile production
 ```
 
-This will:
-- Build for real iOS devices
-- Use release configuration
-- Automatically increment build number
-- Use environment variables from the production profile
+### Android Builds 
 
-## Check Build Status
-
-To see the status of your builds:
+#### Development Build (for testing on emulator)
 
 ```bash
-npx eas build:list
+npx eas build --profile preview --platform android
 ```
 
-## Submit to App Store
-
-After a successful production build:
+#### Production Build (for Google Play)
 
 ```bash
-npx eas submit --platform ios
+npx eas build --platform android --profile production
 ```
 
-## Additional Commands
+## Build Options
 
-### Clean build cache (if facing build issues):
+You can add these flags to your build commands:
 
-```bash
-npx eas build --profile production --platform ios --clear-cache
-```
+- `--auto-submit` - Automatically submit to App Store/Play Store
+- `--non-interactive` - Run in CI environments without prompts
+- `--no-wait` - Start the build and exit (don't wait for completion)
+- `--clear-cache` - Clear EAS cache before building
 
-### Configure EAS for your project:
+## Troubleshooting
 
-```bash
-npx eas build:configure
-```
+If you encounter build errors:
 
-### Validate app config:
+1. Check the build logs for detailed error messages
+2. Verify your app.config.js and eas.json are properly configured
+3. See BUILD_ISSUES_FIXED.md for solutions to common issues
+4. For Firebase Auth related issues, see FIREBASE_AUTH_FIX.md
 
-```bash
-npx expo config --type prebuild
-```
+## Environment Variables
+
+You don't need to set environment variables manually as they are already configured in the eas.json file. Review them there if you need to make changes.
+
+## Helpful Resources
+
+- [EAS Build documentation](https://docs.expo.dev/build/introduction/)
+- [EAS Submit documentation](https://docs.expo.dev/submit/introduction/)
+- [App Store Connect API keys setup](https://docs.expo.dev/app-signing/app-credentials/#app-store-connect-api-keys)

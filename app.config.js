@@ -22,6 +22,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.safehmo.app",
+      googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
         NSCameraUsageDescription: "This app uses the camera to scan documents and allow users to take profile pictures.",
         NSPhotoLibraryUsageDescription: "This app uses the photo library to allow users to select documents and profile pictures.",
@@ -41,6 +42,7 @@ export default {
         backgroundColor: "#0B4E83"
       },
       package: "com.safehmo.app",
+      googleServicesFile: "./google-services.json",
       permissions: [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -84,12 +86,7 @@ export default {
         }
       ],
       [
-        "@react-native-firebase/app",
-        {
-          ios: {
-            googleServicesFile: "./GoogleService-Info.plist"
-          }
-        }
+        "@react-native-firebase/app"
       ]
     ],
     experiments: {

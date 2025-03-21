@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "462410251940",
+    "project_id": "safe-hmo-demo",
+    "storage_bucket": "safe-hmo-demo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462410251940:android:b9af66433f77532641b031",
+        "android_client_info": {
+          "package_name": "com.safehmo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu1mQJesDxW3mMQvNWralKK69K362lPLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
