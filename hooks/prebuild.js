@@ -34,6 +34,11 @@ module.exports = async (config, props) => {
       const fixFirebaseSwiftPath = path.join(process.cwd(), 'scripts', 'fix-firebase-swift.js');
       execSync(`node ${fixFirebaseSwiftPath}`, { stdio: 'inherit' });
       
+      // Run the fix-swift-interface.js script
+      console.log('Running fix-swift-interface.js script...');
+      const fixSwiftInterfacePath = path.join(process.cwd(), 'scripts', 'fix-swift-interface.js');
+      execSync(`node ${fixSwiftInterfacePath}`, { stdio: 'inherit' });
+      
       // Create Podfile.properties.json with the correct iOS deployment target
       const podfilePropertiesPath = path.join(process.cwd(), 'ios', 'Podfile.properties.json');
       const podfileProperties = {
@@ -115,6 +120,16 @@ module.exports = async (config, props) => {
           console.log('Added explicit FirebaseAuth pod with modular_headers to Podfile');
         }
         
+        // Add explicit dependencies for FirebaseAuth if not present
+        if (!podfileContent.includes("pod 'FirebaseAppCheckInterop'")) {
+          podfileContent = podfileContent.replace(
+            "pod 'FirebaseAuth', :modular_headers => true",
+            "pod 'FirebaseAuth', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseAppCheckInterop', :modular_headers => true\n  pod 'FirebaseCoreExtension', :modular_headers => true\n  pod 'GTMSessionFetcher', :modular_headers => true\n  pod 'RecaptchaInterop', :modular_headers => true"
+          );
+          modified = true;
+          console.log('Added explicit dependencies for FirebaseAuth to Podfile');
+        }
+        
         // Add fix for React-jsinspector conflict
         if (!podfileContent.includes('React-jsinspector')) {
           const postInstallPattern = /post_install\s+do\s+\|installer\|/;
@@ -144,10 +159,16 @@ module.exports = async (config, props) => {
           if (postInstallPattern.test(podfileContent)) {
             const firebaseSwiftFix = `
       # Fix for Firebase Swift headers
-      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage'].include?(target.name)
+      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage', 'FirebaseAppCheckInterop', 'FirebaseCoreExtension', 'GTMSessionFetcher', 'RecaptchaInterop'].include?(target.name)
         target.build_configurations.each do |config|
           config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
           config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+          # Add Swift compilation mode settings
+          config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+          # Ensure Swift modules are properly built
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          # Set Swift version explicitly
+          config.build_settings['SWIFT_VERSION'] = '5.0'
         end
       end
 `;
@@ -158,7 +179,48 @@ module.exports = async (config, props) => {
               }
             );
             modified = true;
-            console.log('Added BUILD_LIBRARY_FOR_DISTRIBUTION fix for Firebase Swift headers');
+            console.log('Added enhanced Swift settings for Firebase modules');
+          }
+        }
+        
+        // Add Swift module interface verification fix if not present
+        if (!podfileContent.includes('SwiftModuleFix.xcconfig')) {
+          // Create the SwiftModuleFix.xcconfig file
+          const xconfigPath = path.join(process.cwd(), 'ios', 'SwiftModuleFix.xcconfig');
+          const xconfigContent = `
+// Fix for Swift module interface verification issues
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+BUILD_LIBRARY_FOR_DISTRIBUTION = YES
+DEFINES_MODULE = YES
+SWIFT_VERSION = 5.0
+`;
+          fs.writeFileSync(xconfigPath, xconfigContent);
+          console.log('Created SwiftModuleFix.xcconfig with Swift module interface verification fixes');
+          
+          // Add import for the xcconfig file
+          podfileContent = podfileContent.replace(
+            /platform :ios.+\n/,
+            (match) => `${match}require_relative 'SwiftModuleFix.xcconfig'\n`
+          );
+          
+          // Add Swift module interface verification fix to post_install hook
+          const postInstallPattern = /post_install\s+do\s+\|installer\|/;
+          if (postInstallPattern.test(podfileContent)) {
+            const swiftInterfaceFix = `
+  # Fix for Swift module interface verification
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings.merge!(YAML.load_file('SwiftModuleFix.xcconfig'))
+  end
+`;
+            if (!podfileContent.includes('YAML.load_file')) {
+              podfileContent = podfileContent.replace(
+                postInstallPattern,
+                `post_install do |installer|\n${swiftInterfaceFix}`
+              );
+              modified = true;
+              console.log('Added Swift module interface verification fix to post_install hook');
+            }
           }
         }
         

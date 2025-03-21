@@ -87,16 +87,40 @@ if (fs.existsSync(podfilePath)) {
     console.log('Added explicit FirebaseAuth pod with modular_headers to Podfile');
   }
 
+  // Add explicit dependencies for FirebaseAuth
+  const firebaseDependencies = [
+    "pod 'FirebaseCore', :modular_headers => true",
+    "pod 'FirebaseAppCheckInterop', :modular_headers => true",
+    "pod 'FirebaseCoreExtension', :modular_headers => true",
+    "pod 'GTMSessionFetcher', :modular_headers => true",
+    "pod 'RecaptchaInterop', :modular_headers => true"
+  ];
+
+  if (!podfileContent.includes("pod 'FirebaseAppCheckInterop'")) {
+    podfileContent = podfileContent.replace(
+      "pod 'FirebaseAuth', :modular_headers => true",
+      "pod 'FirebaseAuth', :modular_headers => true\n  pod 'FirebaseCore', :modular_headers => true\n  pod 'FirebaseAppCheckInterop', :modular_headers => true\n  pod 'FirebaseCoreExtension', :modular_headers => true\n  pod 'GTMSessionFetcher', :modular_headers => true\n  pod 'RecaptchaInterop', :modular_headers => true"
+    );
+    modified = true;
+    console.log('Added explicit dependencies for FirebaseAuth to Podfile');
+  }
+
   // Add fix for Firebase Swift headers in post_install hook
   if (!podfileContent.includes('BUILD_LIBRARY_FOR_DISTRIBUTION')) {
     const postInstallPattern = /installer\.pods_project\.targets\.each do \|target\|.*?end/s;
     if (postInstallPattern.test(podfileContent)) {
       const firebaseSwiftFix = `
       # Fix for Firebase Swift headers
-      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage'].include?(target.name)
+      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage', 'FirebaseAppCheckInterop', 'FirebaseCoreExtension', 'GTMSessionFetcher', 'RecaptchaInterop'].include?(target.name)
         target.build_configurations.each do |config|
           config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
           config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+          # Add Swift compilation mode settings
+          config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+          # Ensure Swift modules are properly built
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          # Set Swift version explicitly
+          config.build_settings['SWIFT_VERSION'] = '5.0'
         end
       end
 `;
@@ -107,7 +131,7 @@ if (fs.existsSync(podfilePath)) {
         }
       );
       modified = true;
-      console.log('Added BUILD_LIBRARY_FOR_DISTRIBUTION fix for Firebase Swift headers');
+      console.log('Added enhanced Swift settings for Firebase modules');
     }
   }
 

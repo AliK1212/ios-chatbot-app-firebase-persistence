@@ -31,8 +31,13 @@ target 'SafeHMO' do
   # Explicitly add RCT-Folly with a compatible version
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
 
-  # Explicitly add FirebaseAuth
+  # Explicitly add FirebaseAuth and its dependencies
   pod 'FirebaseAuth', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseAppCheckInterop', :modular_headers => true
+  pod 'FirebaseCoreExtension', :modular_headers => true
+  pod 'GTMSessionFetcher', :modular_headers => true
+  pod 'RecaptchaInterop', :modular_headers => true
 
   # Flags change depending on the env values.
   flags = get_default_flags()
@@ -58,10 +63,16 @@ target 'SafeHMO' do
       end
       
       # Fix for Firebase Swift headers
-      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage'].include?(target.name)
+      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage', 'FirebaseAppCheckInterop', 'FirebaseCoreExtension', 'GTMSessionFetcher', 'RecaptchaInterop'].include?(target.name)
         target.build_configurations.each do |config|
           config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
           config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+          # Add Swift compilation mode settings
+          config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+          # Ensure Swift modules are properly built
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          # Set Swift version explicitly
+          config.build_settings['SWIFT_VERSION'] = '5.0'
         end
       end
     end
