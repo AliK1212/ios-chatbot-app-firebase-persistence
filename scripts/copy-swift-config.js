@@ -13,8 +13,8 @@ console.log('Copying SwiftModuleFix.xcconfig to iOS directory...');
 // Check if iOS directory exists
 const iosDir = path.resolve(process.cwd(), 'ios');
 if (!fs.existsSync(iosDir)) {
-  console.log('iOS directory not found. This script is only for iOS builds.');
-  process.exit(0);
+  console.log('iOS directory not found. Creating it...');
+  fs.mkdirSync(iosDir, { recursive: true });
 }
 
 // Check if source file exists

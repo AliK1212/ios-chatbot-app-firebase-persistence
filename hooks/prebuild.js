@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const yaml = require('yaml'); // Required for parsing YAML files
 
 /**
  * Expo prebuild hook that runs before the native code generation
@@ -19,7 +20,7 @@ module.exports = async (config, props) => {
   console.log('Running prebuild hook...');
   
   // Determine platform from EAS_BUILD_PLATFORM or props
-  const platform = process.env.EAS_BUILD_PLATFORM || props.platform;
+  const platform = process.env.EAS_BUILD_PLATFORM || (props && props.platform) || 'ios';
   console.log(`Platform: ${platform}`);
   
   if (platform === 'ios') {
@@ -50,6 +51,12 @@ module.exports = async (config, props) => {
         'ios.deploymentTarget': '15.1',
         'useModularHeaders': true
       };
+      
+      // Create iOS directory if it doesn't exist
+      if (!fs.existsSync(path.join(process.cwd(), 'ios'))) {
+        fs.mkdirSync(path.join(process.cwd(), 'ios'), { recursive: true });
+        console.log('Created iOS directory');
+      }
       
       fs.writeFileSync(
         podfilePropertiesPath,
@@ -203,10 +210,10 @@ SWIFT_VERSION = 5.0
           fs.writeFileSync(xconfigPath, xconfigContent);
           console.log('Created SwiftModuleFix.xcconfig with Swift module interface verification fixes');
           
-          // Add import for the xcconfig file
+          // Add conditional import for the xcconfig file
           podfileContent = podfileContent.replace(
             /platform :ios.+\n/,
-            (match) => `${match}require_relative 'SwiftModuleFix.xcconfig'\n`
+            (match) => `${match}swift_module_fix_path = 'SwiftModuleFix.xcconfig'\nhas_swift_module_fix = File.exist?(File.join(__dir__, swift_module_fix_path))\n`
           );
           
           // Add Swift module interface verification fix to post_install hook
@@ -214,8 +221,10 @@ SWIFT_VERSION = 5.0
           if (postInstallPattern.test(podfileContent)) {
             const swiftInterfaceFix = `
   # Fix for Swift module interface verification
-  installer.pods_project.build_configurations.each do |config|
-    config.build_settings.merge!(YAML.load_file('SwiftModuleFix.xcconfig'))
+  if has_swift_module_fix
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings.merge!(YAML.load_file('SwiftModuleFix.xcconfig'))
+    end
   end
 `;
             if (!podfileContent.includes('YAML.load_file')) {
@@ -233,11 +242,17 @@ SWIFT_VERSION = 5.0
           fs.writeFileSync(podfilePath, podfileContent);
           console.log('Updated Podfile successfully');
         }
-      }
+        
+        console.log('Prebuild preparation for iOS completed successfully');
+      } 
     } catch (error) {
-      console.error('Error in prebuild hook for iOS:', error);
+      console.error('Error during iOS prebuild preparation:', error);
+      process.exit(1);
     }
+  } else if (platform === 'android') {
+    console.log('Android platform detected, no special prebuild steps needed');
   }
   
+  console.log('Prebuild hook completed successfully');
   return config;
 };

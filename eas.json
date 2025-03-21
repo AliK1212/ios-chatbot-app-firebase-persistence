@@ -20,7 +20,7 @@
         "simulator": true,
         "buildConfiguration": "Debug",
         "resourceClass": "m-medium",
-        "prebuildCommand": "node scripts/fix-firebase-swift.js && node scripts/fix-swift-interface.js && node scripts/copy-swift-config.js && npx expo prebuild --platform ios"
+        "prebuildCommand": "node hooks/prebuild.js && npx expo prebuild --platform ios"
       },
       "android": {
         "buildType": "apk"
@@ -57,7 +57,7 @@
       },
       "ios": {
         "resourceClass": "m-medium",
-        "prebuildCommand": "node scripts/fix-firebase-swift.js && node scripts/fix-swift-interface.js && node scripts/copy-swift-config.js && npx expo prebuild --platform ios",
+        "prebuildCommand": "node hooks/prebuild.js && npx expo prebuild --platform ios",
         "distribution": "store",
         "credentialsSource": "remote"
       },

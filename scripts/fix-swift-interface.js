@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const yaml = require('yaml'); // Required for parsing YAML files
 
 console.log('Fixing Swift module interface verification issues...');
 

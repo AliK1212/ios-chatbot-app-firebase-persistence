@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const yaml = require('yaml'); // Required for parsing YAML files
 
 console.log('Fixing Firebase Swift header issues...');
 

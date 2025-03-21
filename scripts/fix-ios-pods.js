@@ -8,6 +8,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const yaml = require('yaml'); // Required for parsing YAML files
 
 console.log('Starting iOS CocoaPods fix script...');
 
