@@ -21,6 +21,20 @@ try {
   // Continue with the build even if this fails
 }
 
+// Apply Firebase Swift fixes for iOS
+try {
+  console.log('Setting up Firebase Swift compatibility for iOS...');
+  if (fs.existsSync(path.join(__dirname, 'scripts', 'fix-firebase-swift.js'))) {
+    execSync('node scripts/fix-firebase-swift.js', { stdio: 'inherit' });
+    console.log('Successfully configured Firebase Swift fixes');
+  } else {
+    console.log('No Firebase Swift fix script found, skipping');
+  }
+} catch (error) {
+  console.error('Error applying Firebase Swift fixes:', error.message);
+  // Continue with the build even if this fails
+}
+
 // Check for GoogleService-Info.plist
 const googleServiceInfo = path.join(__dirname, 'GoogleService-Info.plist');
 if (!fs.existsSync(googleServiceInfo)) {

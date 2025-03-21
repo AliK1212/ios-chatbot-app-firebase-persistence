@@ -2,7 +2,44 @@
 
 This document outlines the specific issues that were encountered during EAS builds and how they were resolved.
 
-## 1. OpenAI patch-package Error
+## 1. Native Directory Conflict with Prebuild
+
+**Issue:**
+Build failure due to mixed use of native directories (ios/android) and config-driven Prebuild:
+```
+This project contains native project folders but also has native configuration properties in app.config.js, 
+indicating it is configured to use Prebuild. When the android/ios folders are present, 
+EAS Build will not sync properties like: orientation, icon, splash, ios, android, plugins.
+```
+
+**Solution:**
+1. Added `/ios/` and `/android/` to `.easignore` file to force EAS Build to regenerate these directories 
+   during the build process, ensuring all app.config.js settings are properly applied
+2. Added warnings in the prebuild script about existing native directories that might cause conflicts
+
+## 2. GoogleService-Info.plist Path Issue
+
+**Issue:**
+Build error during prebuild phase:
+```
+Error: [ios.xcodeproj]: withIosXcodeprojBaseMod: Path to GoogleService-Info.plist is not defined. 
+Please specify the `expo.ios.googleServicesFile` field in app.json.
+```
+
+**Solution:**
+1. Moved the GoogleService-Info.plist path configuration from the Firebase plugin to the iOS config section:
+   ```javascript
+   ios: {
+     supportsTablet: true,
+     bundleIdentifier: "com.safehmo.app",
+     googleServicesFile: "./GoogleService-Info.plist",
+     // ...
+   }
+   ```
+2. Simplified the Firebase plugin configuration
+3. Added Android Firebase configuration with `google-services.json`
+
+## 3. OpenAI patch-package Error
 
 **Issue:**
 Build failure during npm install with error:
@@ -21,7 +58,7 @@ This error was caused because patch-package cannot apply the following patch fil
    - This utility properly configures OpenAI with `dangerouslyAllowBrowser: true`
    - The environment variable `OPENAI_DANGEROUSLY_ALLOW_BROWSER` is set in EAS.json
 
-## 2. Firebase Swift Module Configuration
+## 4. Firebase Swift Module Configuration
 
 **Issue:**
 Previous complex setup with multiple scripts for Firebase configuration.
@@ -31,8 +68,9 @@ Previous complex setup with multiple scripts for Firebase configuration.
    - Added `@react-native-firebase/app` plugin in app.config.js
    - Configured `expo-build-properties` to use static frameworks
    - Created GoogleService-Info.plist file at the project root
+   - Created google-services.json for Android
 
-## 3. Build Configuration
+## 5. Build Configuration
 
 **Updates:**
 1. Simplified eas.json:
