@@ -9,8 +9,10 @@ source 'https://github.com/CocoaPods/Specs.git'
 source 'https://cdn.cocoapods.org/'
 
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
-# Import Swift module fix configuration
-require_relative 'SwiftModuleFix.xcconfig'
+# Import Swift module fix configuration if available
+swift_module_fix_path = 'SwiftModuleFix.xcconfig'
+has_swift_module_fix = File.exist?(File.join(__dir__, swift_module_fix_path))
+
 install! 'cocoapods', :deterministic_uuids => false
 
 # Add this line to ensure modular headers are used
@@ -56,6 +58,13 @@ target 'SafeHMO' do
   )
 
   post_install do |installer|
+    # Fix for Swift module interface verification
+    if has_swift_module_fix
+      installer.pods_project.build_configurations.each do |config|
+        config.build_settings.merge!(YAML.load_file('SwiftModuleFix.xcconfig'))
+      end
+    end
+    
     # Fix for React-jsinspector conflict
     installer.pods_project.targets.each do |target|
       if target.name == 'React-jsinspector'

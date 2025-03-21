@@ -18,7 +18,9 @@
       },
       "ios": {
         "simulator": true,
-        "buildConfiguration": "Debug"
+        "buildConfiguration": "Debug",
+        "resourceClass": "m-medium",
+        "prebuildCommand": "node scripts/fix-firebase-swift.js && node scripts/fix-swift-interface.js && node scripts/copy-swift-config.js && npx expo prebuild --platform ios"
       },
       "android": {
         "buildType": "apk"
@@ -53,14 +55,15 @@
         "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
         "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       },
+      "ios": {
+        "resourceClass": "m-medium",
+        "prebuildCommand": "node scripts/fix-firebase-swift.js && node scripts/fix-swift-interface.js && node scripts/copy-swift-config.js && npx expo prebuild --platform ios",
+        "distribution": "store",
+        "credentialsSource": "remote"
+      },
       "android": {
         "buildType": "app-bundle",
         "gradleCommand": ":app:bundleRelease"
-      },
-      "ios": {
-        "resourceClass": "m-medium",
-        "distribution": "store",
-        "credentialsSource": "remote"
       }
     }
   },

@@ -12,32 +12,11 @@ const { execSync } = require('child_process');
 console.log('Fixing Swift module interface verification issues...');
 
 // Check if iOS directory exists
-const iosDir = path.resolve(process.cwd(), 'ios');
-if (!fs.existsSync(iosDir)) {
-  console.log('iOS directory not found. Updating template files instead.');
-  
-  // Update firebase.json
-  updateFirebaseJson();
-  
-  // Update ios-podfile-template.rb if it exists
-  updatePodfileTemplate();
-  
-  console.log('Swift module interface verification issues fixed in template files!');
-  process.exit(0);
-}
+const iosDir = path.join(process.cwd(), 'ios');
+const hasIosDir = fs.existsSync(iosDir);
 
-// If iOS directory exists, continue with normal operation
-createSwiftModuleFixXcconfig();
-updatePodfile();
-
-console.log('Swift module interface verification issues fixed successfully!');
-
-// Helper functions
-function createSwiftModuleFixXcconfig() {
-  // Create a special xcconfig file to fix Swift module interface verification issues
-  const xconfigPath = path.resolve(iosDir, 'SwiftModuleFix.xcconfig');
-  const xconfigContent = `
-// Fix for Swift module interface verification issues
+// Create SwiftModuleFix.xcconfig
+const xconfigContent = `// Fix for Swift module interface verification issues
 SWIFT_COMPILATION_MODE = wholemodule
 SWIFT_OPTIMIZATION_LEVEL = -Onone
 BUILD_LIBRARY_FOR_DISTRIBUTION = YES
@@ -45,10 +24,18 @@ DEFINES_MODULE = YES
 SWIFT_VERSION = 5.0
 `;
 
-  fs.writeFileSync(xconfigPath, xconfigContent);
-  console.log('Created SwiftModuleFix.xcconfig with Swift module interface verification fixes');
+// Create the xcconfig file in the project root and in the iOS directory if it exists
+const rootXconfigPath = path.join(process.cwd(), 'SwiftModuleFix.xcconfig');
+fs.writeFileSync(rootXconfigPath, xconfigContent);
+console.log('Created SwiftModuleFix.xcconfig in project root');
+
+if (hasIosDir) {
+  const iosXconfigPath = path.join(iosDir, 'SwiftModuleFix.xcconfig');
+  fs.writeFileSync(iosXconfigPath, xconfigContent);
+  console.log('Created SwiftModuleFix.xcconfig in iOS directory');
 }
 
+// Update firebase.json
 function updateFirebaseJson() {
   const firebaseJsonPath = path.resolve(process.cwd(), 'firebase.json');
   let firebaseConfig = {};
@@ -71,6 +58,7 @@ function updateFirebaseJson() {
   console.log('Updated firebase.json with modular_headers: true');
 }
 
+// Update ios-podfile-template.rb if it exists
 function updatePodfileTemplate() {
   const podfileTemplatePath = path.resolve(process.cwd(), 'ios-podfile-template.rb');
   if (fs.existsSync(podfileTemplatePath)) {
@@ -125,6 +113,7 @@ function updatePodfileTemplate() {
   }
 }
 
+// Update Podfile
 function updatePodfile() {
   const podfilePath = path.resolve(iosDir, 'Podfile');
   if (fs.existsSync(podfilePath)) {
@@ -176,3 +165,21 @@ function updatePodfile() {
     }
   }
 }
+
+if (!hasIosDir) {
+  console.log('iOS directory not found. Updating template files instead.');
+  
+  // Update firebase.json
+  updateFirebaseJson();
+  
+  // Update ios-podfile-template.rb if it exists
+  updatePodfileTemplate();
+  
+  console.log('Swift module interface verification issues fixed in template files!');
+  process.exit(0);
+}
+
+// If iOS directory exists, continue with normal operation
+updatePodfile();
+
+console.log('Swift module interface verification issues fixed successfully!');

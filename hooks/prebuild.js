@@ -39,6 +39,11 @@ module.exports = async (config, props) => {
       const fixSwiftInterfacePath = path.join(process.cwd(), 'scripts', 'fix-swift-interface.js');
       execSync(`node ${fixSwiftInterfacePath}`, { stdio: 'inherit' });
       
+      // Run the copy-swift-config.js script
+      console.log('Running copy-swift-config.js script...');
+      const copySwiftConfigPath = path.join(process.cwd(), 'scripts', 'copy-swift-config.js');
+      execSync(`node ${copySwiftConfigPath}`, { stdio: 'inherit' });
+      
       // Create Podfile.properties.json with the correct iOS deployment target
       const podfilePropertiesPath = path.join(process.cwd(), 'ios', 'Podfile.properties.json');
       const podfileProperties = {

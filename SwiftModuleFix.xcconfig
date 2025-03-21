@@ -1,0 +1,6 @@
+// Fix for Swift module interface verification issues
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+BUILD_LIBRARY_FOR_DISTRIBUTION = YES
+DEFINES_MODULE = YES
+SWIFT_VERSION = 5.0

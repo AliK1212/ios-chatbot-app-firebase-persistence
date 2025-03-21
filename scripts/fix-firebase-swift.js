@@ -12,41 +12,43 @@ console.log('Fixing Firebase Swift header issues...');
 
 // Check if iOS directory exists
 const iosDir = path.resolve(process.cwd(), 'ios');
-if (!fs.existsSync(iosDir)) {
-  console.log('iOS directory not found. Updating template files instead.');
-  
-  // Update firebase.json
-  updateFirebaseJson();
-  
-  // Update ios-podfile-template.rb if it exists
-  updatePodfileTemplate();
-  
-  console.log('Firebase Swift header issues fixed in template files!');
-  process.exit(0);
-}
+const hasIosDir = fs.existsSync(iosDir);
 
-// If iOS directory exists, continue with normal operation
-createPodfileProperties();
-updateFirebaseJson();
-updatePodfile();
-
-console.log('Firebase Swift header issues fixed successfully!');
-
-// Helper functions
+// Create Podfile.properties.json with useModularHeaders: true
 function createPodfileProperties() {
-  const podfilePropertiesPath = path.resolve(iosDir, 'Podfile.properties.json');
+  const podfilePropertiesPath = path.join(iosDir, 'Podfile.properties.json');
   const podfileProperties = {
     'ios.deploymentTarget': '15.1',
     'useModularHeaders': true
   };
 
-  fs.writeFileSync(
-    podfilePropertiesPath,
-    JSON.stringify(podfileProperties, null, 2)
-  );
+  fs.writeFileSync(podfilePropertiesPath, JSON.stringify(podfileProperties, null, 2));
   console.log('Created Podfile.properties.json with useModularHeaders: true');
 }
 
+// Create SwiftModuleFix.xcconfig
+function createSwiftModuleFixXcconfig() {
+  const xconfigContent = `// Fix for Swift module interface verification issues
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+BUILD_LIBRARY_FOR_DISTRIBUTION = YES
+DEFINES_MODULE = YES
+SWIFT_VERSION = 5.0
+`;
+
+  // Create the xcconfig file in the project root and in the iOS directory if it exists
+  const rootXconfigPath = path.join(process.cwd(), 'SwiftModuleFix.xcconfig');
+  fs.writeFileSync(rootXconfigPath, xconfigContent);
+  console.log('Created SwiftModuleFix.xcconfig in project root');
+
+  if (hasIosDir) {
+    const iosXconfigPath = path.join(iosDir, 'SwiftModuleFix.xcconfig');
+    fs.writeFileSync(iosXconfigPath, xconfigContent);
+    console.log('Created SwiftModuleFix.xcconfig in iOS directory');
+  }
+}
+
+// Update firebase.json
 function updateFirebaseJson() {
   const firebaseJsonPath = path.resolve(process.cwd(), 'firebase.json');
   let firebaseConfig = {};
@@ -69,6 +71,7 @@ function updateFirebaseJson() {
   console.log('Updated firebase.json with modular_headers: true');
 }
 
+// Update ios-podfile-template.rb if it exists
 function updatePodfileTemplate() {
   const podfileTemplatePath = path.resolve(process.cwd(), 'ios-podfile-template.rb');
   if (fs.existsSync(podfileTemplatePath)) {
@@ -154,6 +157,7 @@ function updatePodfileTemplate() {
   }
 }
 
+// Update Podfile
 function updatePodfile() {
   const podfilePath = path.resolve(iosDir, 'Podfile');
   if (fs.existsSync(podfilePath)) {
@@ -236,3 +240,28 @@ function updatePodfile() {
     }
   }
 }
+
+// Main execution
+if (!hasIosDir) {
+  console.log('iOS directory not found. Updating template files instead.');
+  
+  // Update firebase.json
+  updateFirebaseJson();
+  
+  // Update ios-podfile-template.rb if it exists
+  updatePodfileTemplate();
+  
+  // Create SwiftModuleFix.xcconfig
+  createSwiftModuleFixXcconfig();
+  
+  console.log('Firebase Swift header issues fixed in template files!');
+  process.exit(0);
+}
+
+// If iOS directory exists, continue with normal operation
+createPodfileProperties();
+createSwiftModuleFixXcconfig();
+updateFirebaseJson();
+updatePodfile();
+
+console.log('Firebase Swift header issues fixed successfully!');
