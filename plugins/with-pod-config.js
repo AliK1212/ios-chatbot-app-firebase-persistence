@@ -32,7 +32,17 @@ const withPodConfig = (config) => {
       console.log('Created Podfile.properties.json with useModularHeaders: true and deploymentTarget: 15.1');
       
       // Replace Podfile with our template
-      const templateContent = fs.readFileSync(templatePath, 'utf8');
+      let templateContent = fs.readFileSync(templatePath, 'utf8');
+      
+      // Remove any Flipper configuration if present
+      if (templateContent.includes('flipper_configuration')) {
+        console.log('Removing Flipper configuration from template...');
+        templateContent = templateContent.replace(
+          /\s*:flipper_configuration\s*=>\s*[^,]+,/g,
+          ''
+        );
+      }
+      
       fs.writeFileSync(podfilePath, templateContent);
       console.log('Replaced Podfile with custom template that includes use_modular_headers!');
       

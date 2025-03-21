@@ -42,8 +42,7 @@
       "ios": {
         "resourceClass": "m-medium",
         "distribution": "store",
-        "credentialsSource": "remote",
-        "prebuildCommand": "node ./scripts/fix-ios-pods.js"
+        "credentialsSource": "remote"
       }
     }
   },

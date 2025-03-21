@@ -32,29 +32,54 @@ try {
   console.error(' Error fixing OpenAI browser compatibility:', error);
 }
 
-// Fix Firebase pod dependencies if building for iOS
+// Fix iOS pod dependencies if building for iOS
 if (platform === 'ios') {
   try {
-    console.log('Fixing Firebase pod dependencies...');
+    console.log('Running iOS pod fixes...');
+    
+    // Run the comprehensive fix-ios-pods.js script
+    try {
+      console.log(' Running fix-ios-pods.js script...');
+      require('../scripts/fix-ios-pods');
+      console.log(' fix-ios-pods.js script completed successfully');
+    } catch (error) {
+      console.error(' Error running fix-ios-pods.js script:', error);
+    }
     
     // Create a direct fix for the Podfile if it exists
     const iosDir = path.join(__dirname, '..', 'ios');
     if (fs.existsSync(iosDir)) {
       const podfilePath = path.join(iosDir, 'Podfile');
       if (fs.existsSync(podfilePath)) {
-        console.log(' Directly modifying Podfile to add use_modular_headers!');
+        console.log(' Directly modifying Podfile to fix compatibility issues');
         let podfileContent = fs.readFileSync(podfilePath, 'utf8');
+        let modified = false;
+        
+        // Remove any Flipper configuration - it's no longer supported in React Native 0.74
+        if (podfileContent.includes('flipper_configuration')) {
+          console.log(' Removing Flipper configuration from Podfile');
+          podfileContent = podfileContent.replace(
+            /\s*:flipper_configuration\s*=>\s*[^,]+,/g,
+            ''
+          );
+          modified = true;
+          console.log(' Removed Flipper configuration from Podfile');
+        }
         
         // Add use_modular_headers! directive if not already present
         if (!podfileContent.includes('use_modular_headers!')) {
+          console.log(' Adding use_modular_headers! to Podfile');
           podfileContent = podfileContent.replace(
             /platform :ios.+\n/,
             (match) => `${match}use_modular_headers!\n`
           );
+          modified = true;
+          console.log(' Added use_modular_headers! to Podfile');
+        }
+        
+        if (modified) {
           fs.writeFileSync(podfilePath, podfileContent);
-          console.log(' Successfully added use_modular_headers! to Podfile');
-        } else {
-          console.log(' use_modular_headers! already present in Podfile');
+          console.log(' Successfully updated Podfile');
         }
       }
       
@@ -85,10 +110,17 @@ if (platform === 'ios') {
     }
     
     // Run the fix-firebase-pods script
-    require('../scripts/fix-firebase-pods');
-    console.log(' Firebase pod dependencies fixed');
+    try {
+      console.log(' Running fix-firebase-pods script...');
+      require('../scripts/fix-firebase-pods');
+      console.log(' Firebase pod dependencies fixed');
+    } catch (error) {
+      console.error(' Error fixing Firebase pod dependencies:', error);
+    }
+    
+    console.log('iOS pod fixes completed');
   } catch (error) {
-    console.error(' Error fixing Firebase pod dependencies:', error);
+    console.error('Error during iOS pod fixes:', error);
   }
 }
 
