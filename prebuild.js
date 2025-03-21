@@ -2,7 +2,7 @@
 
 /**
  * This script is used as a prebuild hook for EAS Build
- * It applies patches to node_modules using patch-package
+ * It sets up the necessary configurations for OpenAI and Firebase
  */
 
 const { execSync } = require('child_process');
@@ -11,29 +11,21 @@ const path = require('path');
 
 console.log('Running prebuild script...');
 
-// Check if patches directory exists and has files
-const patchesDir = path.join(__dirname, 'patches');
-if (fs.existsSync(patchesDir)) {
-  const patches = fs.readdirSync(patchesDir);
-  
-  if (patches.length > 0) {
-    console.log(`Found ${patches.length} patches to apply`);
-    
-    try {
-      // Run patch-package
-      console.log('Applying patches with patch-package...');
-      execSync('npx patch-package', { stdio: 'inherit' });
-      console.log('Successfully applied patches');
-    } catch (error) {
-      console.error('Error applying patches:', error.message);
-      // Don't exit with error code, as this might be non-critical
-      // and we want the build to continue
-    }
-  } else {
-    console.log('No patches found in patches directory');
-  }
-} else {
-  console.log('No patches directory found');
+// Run OpenAI browser fix
+try {
+  console.log('Setting up OpenAI browser compatibility...');
+  execSync('node fix-openai-browser.js', { stdio: 'inherit' });
+  console.log('Successfully configured OpenAI for browser environment');
+} catch (error) {
+  console.error('Error setting up OpenAI browser compatibility:', error.message);
+  // Continue with the build even if this fails
+}
+
+// Check for GoogleService-Info.plist
+const googleServiceInfo = path.join(__dirname, 'GoogleService-Info.plist');
+if (!fs.existsSync(googleServiceInfo)) {
+  console.log('Warning: GoogleService-Info.plist not found at project root');
+  console.log('Firebase functionality may not work correctly');
 }
 
 console.log('Prebuild script completed');

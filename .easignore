@@ -1,0 +1,32 @@
+# Ignore common development files to reduce build context size
+.git/
+node_modules/
+
+# Ignore build artifacts
+.expo/
+web-build/
+dist/
+
+# Ignore docs and unnecessary files
+docs/
+*.md
+!FIREBASE_AUTH_FIX.md
+LICENSE
+README.md
+BUILD_INSTRUCTIONS.md
+
+# Ignore test files
+**/__tests__/
+**/*.test.js
+**/*.spec.js
+
+# Ignore development configurations
+.vscode/
+.idea/
+*.log
+
+# Don't exclude these critical files that might be needed for the build
+!GoogleService-Info.plist
+!app.config.js
+!eas.json
+!package.json

@@ -77,11 +77,20 @@ export default {
         "expo-build-properties",
         {
           ios: {
-            deploymentTarget: "15.1"
+            deploymentTarget: "15.1",
+            useFrameworks: "static",
+            buildConfiguration: "Release"
           }
         }
       ],
-      "./plugins/with-pod-config.js"
+      [
+        "@react-native-firebase/app",
+        {
+          ios: {
+            googleServicesFile: "./GoogleService-Info.plist"
+          }
+        }
+      ]
     ],
     experiments: {
       typedRoutes: true
@@ -109,7 +118,7 @@ export default {
     hooks: {
       prebuild: {
         // This hook will run before the prebuild process
-        script: "./hooks/prebuild.js"
+        script: "./prebuild.js"
       }
     }
   }

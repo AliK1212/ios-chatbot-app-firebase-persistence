@@ -34,3 +34,15 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# App Store Connect API Key
+AuthKey_*.p8
+
+# EAS Build
+.eas/
+eas-build-local/
+dist/
+
+# Expo
+.expo/
+web-build/

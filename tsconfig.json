@@ -4,14 +4,24 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2015",
-    "lib": ["es2015", "es2016", "es2017", "es2018", "es2019", "es2020", "dom"],
+    "lib": [
+      "es2015",
+      "es2016",
+      "es2017",
+      "es2018",
+      "es2019",
+      "es2020",
+      "dom"
+    ],
     "downlevelIteration": true,
     "moduleResolution": "node"
   },
@@ -19,11 +29,14 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
   "exclude": [
     "node_modules",
     "babel.config.js",
     "metro.config.js"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }
