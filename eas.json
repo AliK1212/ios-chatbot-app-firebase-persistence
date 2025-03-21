@@ -16,8 +16,26 @@
       "env": {
         "NODE_ENV": "staging"
       },
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Debug"
+      },
       "android": {
         "buildType": "apk"
+      }
+    },
+    "local": {
+      "distribution": "internal",
+      "releaseChannel": "local",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
       }
     },
     "production": {

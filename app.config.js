@@ -4,6 +4,7 @@ export default {
   expo: {
     name: "Safe HMO",
     slug: "safe-hmo",
+    owner: "deerk1744", 
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/square/app-icon.png", // Using favicon as a temporary square icon
@@ -90,7 +91,7 @@ export default {
         origin: false
       },
       eas: {
-        projectId: "99f6a3ab-5cf1-4f73-83fd-597088cbaf16"
+        projectId: "cd6b9f56-2d9d-473f-8358-39eb634b7868"
       },
       openai: {
         apiKey: process.env.OPENAI_API_KEY || ""

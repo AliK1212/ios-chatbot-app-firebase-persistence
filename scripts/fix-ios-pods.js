@@ -39,30 +39,84 @@ try {
     let modified = false;
     
     // Remove any Flipper configuration - it's no longer supported in React Native 0.74
-    if (podfileContent.includes('flipper_configuration')) {
-      console.log('Removing Flipper configuration from Podfile...');
-      podfileContent = podfileContent.replace(
-        /\s*:flipper_configuration\s*=>\s*[^,]+,/g,
-        ''
-      );
-      modified = true;
-      console.log('Removed Flipper configuration from Podfile');
-    }
+    podfileContent = podfileContent.replace(/\s*:flipper_configuration.*,/g, '');
+    podfileContent = podfileContent.replace(/\s*use_flipper.*\n/g, '');
     
     // Add use_modular_headers! if not present
     if (!podfileContent.includes('use_modular_headers!')) {
-      console.log('Adding use_modular_headers! to Podfile...');
       podfileContent = podfileContent.replace(
-        /platform :ios.+\n/,
-        (match) => `${match}use_modular_headers!\n`
+        'platform :ios',
+        'use_modular_headers!\nplatform :ios'
       );
       modified = true;
-      console.log('Added use_modular_headers! to Podfile');
+    }
+    
+    // Add Firebase static framework setting if not present
+    if (!podfileContent.includes('$RNFirebaseAsStaticFramework')) {
+      podfileContent = podfileContent.replace(
+        'use_modular_headers!',
+        'use_modular_headers!\n\n# Set Firebase as static frameworks\n$RNFirebaseAsStaticFramework = true'
+      );
+      modified = true;
+    }
+    
+    // Add explicit FirebaseAuth pod if not present
+    if (!podfileContent.includes("pod 'FirebaseAuth'")) {
+      podfileContent = podfileContent.replace(
+        /target ['"]SafeHMO['"] do\s*\n\s*config = use_native_modules!/,
+        "target 'SafeHMO' do\n  config = use_native_modules!\n\n  # Explicitly add FirebaseAuth\n  pod 'FirebaseAuth', :modular_headers => true"
+      );
+      modified = true;
+    }
+    
+    // Add fix for React-jsinspector conflict
+    if (!podfileContent.includes('React-jsinspector')) {
+      const postInstallPattern = /post_install\s+do\s+\|installer\|/;
+      if (postInstallPattern.test(podfileContent)) {
+        const jsinspectorFix = `
+  # Fix for React-jsinspector conflict
+  installer.pods_project.targets.each do |target|
+    if target.name == 'React-jsinspector'
+      target.build_configurations.each do |config|
+        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      end
+    end
+  end
+`;
+        podfileContent = podfileContent.replace(
+          postInstallPattern,
+          `post_install do |installer|\n${jsinspectorFix}`
+        );
+        modified = true;
+      }
+    }
+    
+    // Add fix for Firebase Swift headers
+    if (!podfileContent.includes('BUILD_LIBRARY_FOR_DISTRIBUTION')) {
+      const postInstallPattern = /installer\.pods_project\.targets\.each do \|target\|.*?end/s;
+      if (postInstallPattern.test(podfileContent)) {
+        const firebaseSwiftFix = `
+      # Fix for Firebase Swift headers
+      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage'].include?(target.name)
+        target.build_configurations.each do |config|
+          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+          config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+        end
+      end
+`;
+        podfileContent = podfileContent.replace(
+          postInstallPattern,
+          (match) => {
+            return match.replace(/end\s*$/, `${firebaseSwiftFix}    end`);
+          }
+        );
+        modified = true;
+      }
     }
     
     if (modified) {
       fs.writeFileSync(podfilePath, podfileContent);
-      console.log('Updated Podfile successfully');
+      console.log('Updated Podfile to fix Firebase Swift headers and other issues');
     }
   }
   
@@ -117,8 +171,26 @@ try {
   // Fix Firebase pods if needed
   console.log('Fixing Firebase pods...');
   try {
-    require('./fix-firebase-pods');
-    console.log('Firebase pods fixed successfully');
+    // Create or update firebase.json to include modular_headers: true
+    const firebaseJsonPath = path.resolve(process.cwd(), 'firebase.json');
+    let firebaseConfig = {};
+    
+    if (fs.existsSync(firebaseJsonPath)) {
+      try {
+        firebaseConfig = JSON.parse(fs.readFileSync(firebaseJsonPath, 'utf8'));
+      } catch (e) {
+        console.log('Error parsing firebase.json, creating a new one');
+        firebaseConfig = {};
+      }
+    }
+    
+    // Ensure the react-native.ios.modular_headers setting exists
+    firebaseConfig['react-native'] = firebaseConfig['react-native'] || {};
+    firebaseConfig['react-native']['ios'] = firebaseConfig['react-native']['ios'] || {};
+    firebaseConfig['react-native']['ios']['modular_headers'] = true;
+    
+    fs.writeFileSync(firebaseJsonPath, JSON.stringify(firebaseConfig, null, 2));
+    console.log('Updated firebase.json with modular_headers: true');
   } catch (error) {
     console.log('Error fixing Firebase pods, but continuing:', error.message);
   }

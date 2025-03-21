@@ -1,5 +1,5 @@
-require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
-require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 require 'json'
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
@@ -11,16 +11,29 @@ source 'https://cdn.cocoapods.org/'
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 install! 'cocoapods', :deterministic_uuids => false
 
-# Add this line to enable modular headers for all pods
+# Add this line to ensure modular headers are used
 use_modular_headers!
+
+# Set Firebase as static frameworks
+$RNFirebaseAsStaticFramework = true
 
 prepare_react_native_project!
 
-# Simplified configuration for newer React Native versions
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
 target 'SafeHMO' do
-  use_expo_modules!
   config = use_native_modules!
   
+  # Explicitly add RCT-Folly with a compatible version
+  pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
+
+  # Explicitly add FirebaseAuth
+  pod 'FirebaseAuth', :modular_headers => true
+
   # Flags change depending on the env values.
   flags = get_default_flags()
 
@@ -29,33 +42,42 @@ target 'SafeHMO' do
     # Hermes is now enabled by default. Disable by setting this flag to false.
     :hermes_enabled => flags[:hermes_enabled],
     :fabric_enabled => flags[:fabric_enabled],
+    # Enables the New Architecture
+    :new_arch_enabled => true,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # Explicitly add RCT-Folly with a compatible version
-  pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
-  
-  # Explicitly add React-jsinspector
-  pod 'React-jsinspector', :path => '../node_modules/react-native/ReactCommon/jsinspector'
-
-  # Set variables for Firebase and other libraries that need static frameworks
-  $RNFirebaseAsStaticFramework = true
-  $RNGoogleMobileAdsAsStaticFramework = true
-
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    # Fix for React-jsinspector conflict
+    installer.pods_project.targets.each do |target|
+      if target.name == 'React-jsinspector'
+        target.build_configurations.each do |config|
+          config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+        end
+      end
+      
+      # Fix for Firebase Swift headers
+      if ['FirebaseAuth', 'FirebaseCore', 'FirebaseFirestore', 'FirebaseStorage'].include?(target.name)
+        target.build_configurations.each do |config|
+          config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+          config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+        end
+      end
+    end
+    
     react_native_post_install(
       installer,
-      File.dirname(`node --print "require.resolve('react-native/package.json')"`),
+      config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
     
-    # This is necessary for Xcode 14, because it signs resource bundles by default
-    # when building for devices.
+    # This is necessary for Xcode 14
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+        config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+        config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
       end
     end
   end
