@@ -9,6 +9,8 @@ source 'https://github.com/CocoaPods/Specs.git'
 source 'https://cdn.cocoapods.org/'
 
 platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
+# Import Swift module fix configuration
+require_relative 'SwiftModuleFix.xcconfig'
 install! 'cocoapods', :deterministic_uuids => false
 
 # Add this line to ensure modular headers are used
