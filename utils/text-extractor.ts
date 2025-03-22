@@ -1,20 +1,6 @@
 // Import Buffer polyfill for browser environments
 import './buffer-polyfill';
 
-// Conditional import to prevent errors in React Native environment
-let pdfParse: any = null;
-try {
-  // Only try to import in Node.js environment
-  if (typeof window === 'undefined') {
-    pdfParse = require('pdf-parse');
-    console.log('[text-extractor] Loaded pdf-parse module for Node.js environment');
-  } else {
-    console.log('[text-extractor] Running in browser/mobile environment, pdf-parse not available');
-  }
-} catch (error) {
-  console.warn('[text-extractor] Failed to load pdf-parse module:', error);
-}
-
 // Detect if we're in a React Native environment
 const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 console.log(`[text-extractor] Environment: ${isReactNative ? 'React Native' : typeof window !== 'undefined' ? 'Browser' : 'Node.js'}`);
@@ -187,52 +173,6 @@ export async function extractTextFromPdf(fileBuffer: Buffer | Uint8Array | Array
       'byteLength' in processBuffer ? processBuffer.byteLength : (processBuffer as Buffer).length
     } bytes`);
     console.log(`[extractTextFromPdf] Environment: ${isReactNative ? 'React Native' : typeof window !== 'undefined' ? 'Browser' : 'Node.js'}`);
-    console.log(`[extractTextFromPdf] PDF parser available: ${!!pdfParse}`);
-    
-    // APPROACH 1: Try using pdf-parse in Node.js environment
-    if (pdfParse && typeof window === 'undefined') {
-      try {
-        console.log('[extractTextFromPdf] Attempting to parse PDF with pdf-parse');
-        
-        // Ensure we have a Buffer for pdf-parse
-        const bufferForParse = Buffer.isBuffer(processBuffer) 
-          ? processBuffer 
-          : Buffer.from(processBuffer.buffer, processBuffer.byteOffset, processBuffer.byteLength);
-        
-        const pdfData = await pdfParse(bufferForParse);
-        
-        // Store page count for metadata
-        pageCount = pdfData.numpages || 1;
-        console.log(`[extractTextFromPdf] PDF has ${pageCount} pages`);
-        
-        if (!pdfData || !pdfData.text || pdfData.text.trim().length < 100) {
-          console.warn('[extractTextFromPdf] PDF parsing returned insufficient text, trying alternative extraction method');
-          throw new Error('PDF parsing returned insufficient text');
-        }
-        
-        // Check if the extracted text contains PDF structure elements
-        if (pdfData.text.includes('/Type /StructElem') || 
-            pdfData.text.includes('endobj') || 
-            pdfData.text.includes('/S /P /P') ||
-            pdfData.text.includes('%PDF-')) {
-          console.warn('[extractTextFromPdf] PDF text contains PDF structure elements, trying alternative extraction');
-          throw new Error('PDF text contains PDF structure elements');
-        }
-        
-        extractedText = pdfData.text;
-        console.log(`[extractTextFromPdf] PDF parsed successfully, extracted ${extractedText.length} characters from ${pageCount} pages`);
-        
-        return {
-          text: extractedText,
-          pageCount,
-          fileType
-        };
-      } catch (pdfParseError) {
-        console.error('[extractTextFromPdf] PDF parsing failed:', pdfParseError);
-        console.log('[extractTextFromPdf] Falling back to alternative extraction method');
-        // Continue to fallback method
-      }
-    }
     
     // APPROACH 2: Try using PDF.js in browser environments (not React Native)
     if (typeof window !== 'undefined' && !isReactNative) {

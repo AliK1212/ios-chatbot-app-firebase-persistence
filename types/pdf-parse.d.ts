@@ -1,25 +1,10 @@
-declare module 'pdf-parse' {
-  interface PDFData {
-    numpages: number;
-    numrender: number;
-    info: {
-      PDFFormatVersion: string;
-      IsAcroFormPresent: boolean;
-      IsXFAPresent: boolean;
-      [key: string]: any;
-    };
-    metadata: any;
-    text: string;
-    version: string;
-  }
+// This file is kept for backward compatibility but is no longer used
+// The app no longer depends on pdf-parse to avoid React Native compatibility issues
 
-  interface PDFOptions {
-    pagerender?: (pageData: any) => Promise<string>;
-    max?: number;
-    version?: string;
+declare module 'pdf-lib' {
+  export class PDFDocument {
+    static load(buffer: Buffer | ArrayBuffer): Promise<PDFDocument>;
+    getAllTextContents(): Promise<string>;
+    getPageCount(): number;
   }
-
-  function parse(dataBuffer: Buffer, options?: PDFOptions): Promise<PDFData>;
-  
-  export = parse;
 }

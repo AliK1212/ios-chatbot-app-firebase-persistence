@@ -12,7 +12,9 @@
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-const pdfParse = require('pdf-parse');
+// We're not using pdf-parse as it causes issues with React Native builds
+// Using pdf-lib for server-side PDF operations instead (install using npm install pdf-lib)
+const { PDFDocument } = require('pdf-lib');
 const { getStorage } = require('firebase-admin/storage');
 const { getFirestore } = require('firebase-admin/firestore');
 const OpenAI = require('openai');
@@ -92,11 +94,8 @@ async function processPdf(filePath) {
     console.log(`Processing ${fileName}...`);
     
     // Read PDF file
-    const dataBuffer = fs.readFileSync(filePath);
-    const pdfData = await pdfParse(dataBuffer);
-    
-    // Extract text from PDF
-    const text = pdfData.text;
+    const pdfDoc = await PDFDocument.load(fs.readFileSync(filePath));
+    const text = await pdfDoc.getAllTextContents();
     console.log(`Extracted ${text.length} characters from ${fileName}`);
     
     // Upload PDF to Firebase Storage

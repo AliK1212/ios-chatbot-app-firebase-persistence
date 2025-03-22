@@ -2,17 +2,29 @@
   "cli": {
     "version": ">= 5.9.1",
     "appVersionSource": "remote",
-    "promptToConfigurePushNotifications": true
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "credentialsSource": "remote"
       },
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true",
+        "OPENAI_API_KEY": "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",
+        "OPENAI_MODEL": "gpt-3.5-turbo",
+        "OPENAI_EMBEDDING_MODEL": "text-embedding-ada-002",
+        "FIREBASE_API_KEY": "AIzaSyCu1mQJesDxW3mMQvNWralKK69K362lPLk",
+        "FIREBASE_AUTH_DOMAIN": "safe-hmo-demo.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "safe-hmo-demo",
+        "FIREBASE_STORAGE_BUCKET": "safe-hmo-demo.firebasestorage.app",
+        "FIREBASE_MESSAGING_SENDER_ID": "462410251940",
+        "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
+        "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       }
     },
     "preview": {
@@ -23,7 +35,17 @@
       },
       "env": {
         "NODE_ENV": "staging",
-        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true"
+        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true",
+        "OPENAI_API_KEY": "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",
+        "OPENAI_MODEL": "gpt-3.5-turbo",
+        "OPENAI_EMBEDDING_MODEL": "text-embedding-ada-002",
+        "FIREBASE_API_KEY": "AIzaSyCu1mQJesDxW3mMQvNWralKK69K362lPLk",
+        "FIREBASE_AUTH_DOMAIN": "safe-hmo-demo.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "safe-hmo-demo",
+        "FIREBASE_STORAGE_BUCKET": "safe-hmo-demo.firebasestorage.app",
+        "FIREBASE_MESSAGING_SENDER_ID": "462410251940",
+        "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
+        "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       },
       "ios": {
         "simulator": true,
@@ -38,7 +60,17 @@
       },
       "env": {
         "NODE_ENV": "production",
-        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true"
+        "OPENAI_DANGEROUSLY_ALLOW_BROWSER": "true",
+        "OPENAI_API_KEY": "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",
+        "OPENAI_MODEL": "gpt-3.5-turbo",
+        "OPENAI_EMBEDDING_MODEL": "text-embedding-ada-002",
+        "FIREBASE_API_KEY": "AIzaSyCu1mQJesDxW3mMQvNWralKK69K362lPLk",
+        "FIREBASE_AUTH_DOMAIN": "safe-hmo-demo.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "safe-hmo-demo",
+        "FIREBASE_STORAGE_BUCKET": "safe-hmo-demo.firebasestorage.app",
+        "FIREBASE_MESSAGING_SENDER_ID": "462410251940",
+        "FIREBASE_APP_ID": "1:462410251940:web:b9af66433f77532641b031",
+        "FIREBASE_MEASUREMENT_ID": "G-SWN5GQDTS1"
       },
       "ios": {
         "resourceClass": "m-medium",

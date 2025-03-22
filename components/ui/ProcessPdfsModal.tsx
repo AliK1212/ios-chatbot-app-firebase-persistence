@@ -17,6 +17,8 @@ import { Colors } from '../../constants/Colors';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 import { testCorsForAllPdfs } from '../../utils/cors-test';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { COLLECTIONS } from '../../firebase/config';
 
 interface ProcessPdfsModalProps {
   isVisible: boolean;
@@ -35,13 +37,32 @@ export default function ProcessPdfsModal({ isVisible, onClose }: ProcessPdfsModa
   const [pdfsFound, setPdfsFound] = useState<string[]>([]);
 
   useEffect(() => {
-    // Check if the current user is an admin
-    const auth = getAuth();
-    const user = auth.currentUser;
+    // Check if the current user is an admin by checking role in Firestore
+    const checkAdminRole = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        
+        if (user) {
+          const db = getFirestore();
+          const userDocRef = doc(db, COLLECTIONS.USERS, user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists() && userDoc.data().role === 'admin') {
+            console.log("User has admin role - enabling admin features");
+            setIsAdmin(true);
+          } else {
+            console.log("User is not an admin");
+            setIsAdmin(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking admin role:", error);
+        setIsAdmin(false);
+      }
+    };
     
-    if (user && user.email === 'admin@test.com') {
-      setIsAdmin(true);
-    }
+    checkAdminRole();
 
     // Auto-check storage access when modal opens
     if (isVisible) {
@@ -168,6 +189,8 @@ export default function ProcessPdfsModal({ isVisible, onClose }: ProcessPdfsModa
   };
 
   const handleProcessPdfs = async () => {
+    console.log("Process PDFs button clicked");
+    
     if (!isAdmin) {
       Alert.alert(
         "Permission Denied",
@@ -223,11 +246,23 @@ export default function ProcessPdfsModal({ isVisible, onClose }: ProcessPdfsModa
       try {
         // Call the processStoragePdfs function with prefix
         addLog('Calling processStoragePdfs function...');
-        await processStoragePdfs(prefix);
+        addLog(`Debug: Process started at ${new Date().toISOString()}`);
+        const result = await processStoragePdfs(prefix);
+        addLog(`Debug: Got result: ${JSON.stringify(result, null, 2)}`);
         
         // Since processStoragePdfs now returns void, we check for errors differently
-        addLog('PDF processing completed successfully!');
-        setIsComplete(true);
+        if (result && result.success) {
+          addLog(`PDF processing completed successfully! Processed ${result.processedCount} document(s)`);
+          setIsComplete(true);
+        } else if (result) {
+          // Processing returned but with errors
+          addLog(`Processing completed with ${result.errorCount} error(s)`);
+          if (result.errors && result.errors.length > 0) {
+            result.errors.forEach((error, index) => {
+              addLog(`Error ${index + 1}: ${JSON.stringify(error)}`);
+            });
+          }
+        }
       } catch (processingError) {
         if (processingError instanceof Error) {
           const errorMsg = processingError.message;
@@ -318,7 +353,10 @@ export default function ProcessPdfsModal({ isVisible, onClose }: ProcessPdfsModa
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={[styles.button, styles.testButton]} 
-              onPress={checkStorageAccess}
+              onPress={() => {
+                console.log("Test Storage Access button clicked");
+                checkStorageAccess();
+              }}
               disabled={isProcessing || !isAdmin}
             >
               <Text style={styles.buttonText}>Test Storage Access</Text>
@@ -326,7 +364,10 @@ export default function ProcessPdfsModal({ isVisible, onClose }: ProcessPdfsModa
             
             <TouchableOpacity 
               style={[styles.button, isProcessing ? styles.disabledButton : styles.primaryButton]} 
-              onPress={handleProcessPdfs}
+              onPress={() => {
+                console.log("Process PDFs button clicked");
+                handleProcessPdfs();
+              }}
               disabled={isProcessing || !isAdmin}
             >
               <Text style={styles.buttonText}>

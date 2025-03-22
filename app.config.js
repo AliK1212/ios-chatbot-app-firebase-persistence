@@ -14,7 +14,7 @@ export default {
     splash: {
       image: "./assets/images/safe-logo-.png",
       resizeMode: "contain",
-      backgroundColor: "#0B4E83"
+      backgroundColor: "orange"
     },
     assetBundlePatterns: [
       "**/*"
